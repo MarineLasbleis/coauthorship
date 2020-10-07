@@ -20,6 +20,14 @@ author = next(search_query).fill()
 # Print the titles of the author's publications
 #print([pub.bib for pub in author.publications])
 
+author_list = {}
+
+def add_author(author_list, author_name):
+    if author_name in author_list: 
+        author_list[author_name] += 1
+    else: 
+        author_list[author_name] = 1
+    return author_list
 
 def format_name_authors(string_author):
     """ Take a string with surname and family name, and return the first letter of surname + family name 
@@ -36,9 +44,12 @@ for pub in author.publications:
     pub_complete = pub.fill()
     authors = pub_complete.bib["author"]
     authors = re.split(" and ", authors)
-    print(authors)
+    #print(authors)
     for author_name in authors: 
-        print(format_name_authors(author_name))
+        single_author = format_name_authors(author_name)
+        author_list = add_author(author_list, single_author)
+        
+    print(author_list)
 
 
     
