@@ -1,6 +1,7 @@
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import pandas as pd
 
 
 
@@ -66,8 +67,47 @@ authors = {'J Noir': 1, 'M Calkins': 1, 'M Lasbleis': 32, 'J Cantwell': 1, 'J Au
 
 G.add_nodes_from(authors.keys())
 
+list_authors = authors.keys()
+relationships = pd.DataFrame(columns = list_authors, index = list_authors)
+relationships[:] = int(0)
+
+relationships["M Lasbleis"] = 1.
+
+relationships["M Lasbleis"]["E Tasker"] = 2
+
+relationships["J Tan"]["E Tasker"] = 2
+relationships["S Kane"]["E Tasker"] = 2
+relationships["J Tan"]["S Kane"] = 2
+
+#add weights to edges
+edge_list = [] #test networkx
+for index, row in relationships.iterrows():
+    i = 0
+    for col in row:
+        weight = float(col)/1.
+        edge_list.append((index, relationships.columns[i], weight))
+        i += 1
+updated_edge_list = [x for x in edge_list if not x[2] == 0.0]
+#remove self references
+for i in updated_edge_list:
+    if i[0] == i[1]:
+        updated_edge_list.remove(i)
+#reorder edge list - this was a pain
+test = nx.get_edge_attributes(G, 'weight')
+
+G.add_weighted_edges_from(updated_edge_list)
+
+updated_again_edges = []
+for i in nx.edges(G):
+    for x in test.keys():
+        if i[0] == x[0] and i[1] == x[1]:
+            updated_again_edges.append(test[x])
+            
+widths = [x*100 for x in updated_again_edges]
+
 print(authors.values())
 
-nx.draw(G, with_labels=True, node_size=[authors[k]*100 for k in authors])
+pos = nx.spring_layout(G, k=0.42, iterations=17)
+nx.draw(G, pos, with_labels=True, node_size=[authors[k]*1 for k in authors],  width = widths)
 
 plt.show()
