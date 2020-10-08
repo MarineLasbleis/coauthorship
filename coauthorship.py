@@ -9,12 +9,13 @@
 
 from scholarly import scholarly
 import re
+import networkx as nx
 
 #print(next(scholarly.search_author('Marine Lasbleis')))
 
 search_query = scholarly.search_author('Marine Lasbleis')
 author = next(search_query).fill()
-#print(author)
+print(author)
 
 
 # Print the titles of the author's publications
@@ -52,7 +53,7 @@ for pub in author.publications:
     print(author_list)
 
 
-    
+print(author_list)    
 # Take a closer look at the first publication
 pub = author.publications[0].fill()
 print(pub.bib["author"])
@@ -63,3 +64,17 @@ print(pub.bib["author"])
 
 
 ## Create a graph
+
+
+G = nx.Graph()
+
+for name in author_list:
+    G.add_node(name, size=author_list[name])
+
+pos = nx.circular_layout(G)
+
+nx.draw_networkx_nodes(
+    G,
+    pos,
+    node_size=author_list.values(),
+)
