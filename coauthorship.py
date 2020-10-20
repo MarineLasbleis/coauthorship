@@ -35,6 +35,46 @@ def format_name_authors(string_author):
     return surname_initial + " " + family_name 
 
 
+def extract_relationships(name, citation_threshold=0, verbose=False):
+    """
+    Explore the Google scholar profile of someone and extract the co-authorships in the publication list.
+    
+    name: of the author
+    citation_threshol: by default, all the publications will be listed (use 1 to have all the publications cited at least once)
+    verbose: if you want more things to be printed on screen
+    """
+    search_query = scholarly.search_author(name)
+    short_name = format_name_authors(name)
+    author = next(search_query)#.fill()
+    if verbose: 
+        print("You are looking at the Google scholar profile of {}, from {}".format(author.name, author.affiliation))
+    author = author.fill() # add info about co authors and publications
+    author_list = {}
+    relationships = pd.DataFrame(0, index=[short_name], columns=[short_name])
+        
+    # go through all the publications and create a big matrix with all the relationships (and add author names to author_list)
+    for pub in author.publications:
+        if float(pub.bib["cites"])>= citation_threshold:  #only the papers that have been cited at least once
+            pub_complete = pub.fill()
+            print(pub_complete.bib["title"])
+            authors = pub_complete.bib["author"]
+            authors = re.split(" and ", authors)
+            single_paper = []
+            for author_name in authors: 
+                single_author = format_name_authors(author_name)
+                author_list = add_author(author_list, single_author)
+                single_paper.append(single_author)
+                if single_author not in relationships.columns:
+                    relationships[single_author] = 0.
+                    new_line = pd.DataFrame(0, index=[single_author], columns=relationships.columns)
+                    relationships = relationships.append(new_line)
+            for author1 in single_paper:
+                for author2 in single_paper:
+                    if author1 != author2:
+                        relationships[author1][author2] += 1
+    return author_list, relationships
+
+
 if __name__ == "__main__": 
 
 
